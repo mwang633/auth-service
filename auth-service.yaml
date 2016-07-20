@@ -1,0 +1,164 @@
+swagger: '2.0'
+
+info:
+  version: "1.0"
+  title: auth-service
+
+paths: 
+  /User/Login:
+    post:
+      description:
+        Login and create a new user session
+      produces:
+        - application/json
+      parameters:
+        - name: userEmail
+          in: formData
+          description: user email address for login
+          required: true
+          type: string
+          format: string
+        - name: password
+          in: formData
+          description: user login password
+          required: true
+          type: string
+          format: string
+      responses:
+        200:
+          description: Successful response
+          schema: 
+            $ref: '#/definitions/AuthResponse'
+            
+  /User/Logout:
+    post:
+      description:
+        Logout current user, invalidate the current context
+      produces:
+        - application/json
+      parameters:
+        - name: token
+          in: formData
+          description: session token
+          required: true
+          type: string
+          format: string
+      responses:
+        200:
+          description: Successful response, regardless of whether the context is valid or not
+          
+  /User/PasswordChange:
+    post:
+      description: |
+        Change password of given user
+      produces:
+        - application/json
+      parameters:
+        - name: userEmail
+          in: formData
+          description: user email address for login
+          required: true
+          type: string
+          format: string
+        - name: oldPassword
+          in: formData
+          description: old user login password
+          required: true
+          type: string
+          format: string
+        - name: newPassword
+          in: formData
+          description: new user login password
+          required: true
+          type: string
+          format: string
+      responses:
+        200:
+          description: Successful response
+          schema: 
+            $ref: '#/definitions/AuthResponse'
+
+  /User:
+    put:
+      description:
+        Create or change user login
+      produces:
+        - application/json
+      parameters:
+       - name: body
+         in: body
+         required: true
+         schema:
+            $ref: '#/definitions/User'
+      responses:
+        200:
+          description: Successful response
+
+  /CheckPermission:
+    post:
+      description: Check if user context has access to a given url path and method. return user context if has permission
+      parameters:
+        - name: token
+          in: formData
+          description: user token
+          required: true
+          type: string
+          format: string
+        - name: method
+          in: formData
+          description: request method
+          enum: [ "GET", "POST", "PUT"]
+          required: true
+          type: string
+          format: string
+        - name: path
+          in: formData
+          description: url request path
+          required: true
+          type: string
+          format: string
+      responses:
+        200:
+          description: Successful response
+          schema: 
+            $ref: '#/definitions/AuthResponse'
+                  
+definitions:
+  User:
+    type: object
+    properties:
+      userEmail:
+        type: string
+        description: user login email
+      userId:
+        type: string
+        description: user id, null if error
+      password:
+        type: string
+        description: password in plaintext
+
+  AuthResponse:
+    type: object
+    properties:
+      error:
+        type: string
+        description: not null if error during authenticate,
+        enum: [ "UserEmailNotFound", "InvalidPassword", "SessionNotFound", "SessionExpired" ,"PermissionDenied"]
+      session :
+        type : object
+        description: null if error during authenticate
+        properties:
+          userId:
+            type: string
+            description: user id, null if error
+          token:
+            type: string
+            description: session token
+          expirationTime:
+            type : string
+            format: date-time
+            description: the time this session expires 
+
+  
+        
+        
